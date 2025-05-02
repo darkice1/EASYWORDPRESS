@@ -37,7 +37,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
 		<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-		<kotlin.version>1.9.20</kotlin.version>
+		<kotlin.version>2.1.20</kotlin.version>
 	</properties>
 	<distributionManagement>
 		<snapshotRepository>
@@ -137,7 +137,7 @@
 				<!-- 为kotlin发布文档使用方便发布 -->
 				<groupId>org.jetbrains.dokka</groupId>
 				<artifactId>dokka-maven-plugin</artifactId>
-				<version>${kotlin.version}</version>
+				<version>2.0.0</version>
 				<executions>
 					<execution>
 						<phase>prepare-package</phase>
