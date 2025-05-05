@@ -10,7 +10,7 @@ object TestWordpress {
 		val prop = Properties().apply {
 			load(FileInputStream("config.properties"))
 		}
-		print(prop)
+		println(prop)
 
 		val baseUrl = prop["WPBASEURL"].toString()
 		val username = prop["WPUSERNAME"].toString()
