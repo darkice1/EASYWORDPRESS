@@ -1,11 +1,10 @@
 @file:Suppress("VulnerableLibrariesLocal")
 
-import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
 	kotlin("jvm") version "2.1.20"
 	`java-library`
-	id("org.jetbrains.dokka") version "2.0.0"
+	id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 	`maven-publish`
 	signing                               // Gradle 自带插件
 }
@@ -57,11 +56,6 @@ tasks.withType<Javadoc>().configureEach {
 	}
 }
 
-// -------- Dokka --------
-tasks.withType<DokkaTask>().configureEach {
-	outputDirectory.set(layout.buildDirectory.dir("dokka"))
-}
-
 // -------- 发布到 OSSRH --------
 publishing {
 	publications {
@@ -94,23 +88,47 @@ publishing {
 			}
 		}
 	}
+}
 
+tasks.register("publishAndCloseSonatype") {
+	group = "mypublishing"
+	description =
+		"Publish artifacts to Sonatype OSSRH, then close the staging repository."
+	dependsOn("publishToSonatype","closeSonatypeStagingRepository")
+//	finalizedBy("closeSonatypeStagingRepository")   // 上传完成后再执行 close
+	doLast {
+		println("close:[$group:$projectName:$version]")
+	}
+}
+
+tasks.register("publiclocal") {
+	group = "mypublishing"
+	description = "Close & release Sonatype staging repo, then print coordinates."
+	dependsOn("publishMavenJavaPublicationToMavenLocal")
+	doLast {
+		println("public local:[${project.group}:${project.name}:${project.version}]")
+	}
+}
+
+tasks.register("release") {
+	group = "mypublishing"
+	description = "Close & release Sonatype staging repo, then print coordinates."
+	dependsOn("publishToSonatype","closeAndReleaseSonatypeStagingRepository")
+	doLast {
+		println("release:[${project.group}:${project.name}:${project.version}]")
+	}
+}
+
+nexusPublishing {
 	repositories {
-		maven {
-			name = "ossrh"
-			url = uri(
-				if (version.toString().endsWith("SNAPSHOT"))
-					"https://oss.sonatype.org/content/repositories/snapshots/"
-				else
-					"https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-			)
-			credentials {
-				username = providers.gradleProperty("ossrhUsername")
-					.orElse(System.getenv("OSSRH_USERNAME")).getOrNull()
-				password = providers.gradleProperty("ossrhPassword")
-					.orElse(System.getenv("OSSRH_PASSWORD")).getOrNull()
-			}
+		sonatype {
+			nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+			snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+			username.set(providers.gradleProperty("centralUsername"))
+			password.set(providers.gradleProperty("centralPassword"))
 		}
+//		repositoryDescription = "$group:$projectName:$version"
+//		description = "$group:$projectName:$version"
 	}
 }
 
