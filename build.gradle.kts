@@ -97,7 +97,7 @@ tasks.register("publishAndCloseSonatype") {
 	dependsOn("publishToSonatype","closeSonatypeStagingRepository")
 //	finalizedBy("closeSonatypeStagingRepository")   // 上传完成后再执行 close
 	doLast {
-		println("close:[$group:$projectName:$version]")
+		println("close:[${project.group}:$projectName:$version]")
 	}
 }
 
