@@ -33,7 +33,7 @@ repositories {
 
 // -------- 依赖 --------
 dependencies {
-	implementation("com.afrozaar.wordpress:wp-api-v2-client-java:4.8.3")
+	api("com.afrozaar.wordpress:wp-api-v2-client-java:4.8.3")
 	implementation("com.github.ben-manes.caffeine:caffeine:3.2.0")
 
 	implementation(kotlin("stdlib"))
