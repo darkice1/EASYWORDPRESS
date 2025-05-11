@@ -6,10 +6,12 @@ import com.afrozaar.wordpress.wpapi.v2.Wordpress
 import com.afrozaar.wordpress.wpapi.v2.model.Term
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import java.util.concurrent.TimeUnit
 
 class EWordpress(private val wp: Wordpress) {
-    // 使用Caffeine缓存，设置过期时间为1小时
     private val tagCache: Cache<String, Term> = Caffeine.newBuilder()
         .expireAfterWrite(1, TimeUnit.HOURS)
         .build()
@@ -50,11 +52,34 @@ class EWordpress(private val wp: Wordpress) {
         // 如果仍未找到，则创建新的Term
         val newTerm = Term().apply {
             this.name = name
-            this.description = ""
+//            this.description = ""
+//            this.slug = java.net.URLEncoder.encode(name, "UTF-8")
         }
-        val createdTerm = createTerm(newTerm)
-        cache.put(name, createdTerm)
-        return createdTerm
+//        println(newTerm)
+        val crnewTerm = createTerm(newTerm)
+        cache.put(name, crnewTerm)
+        return crnewTerm
+    }
+
+    // private fun restTemplate(): RestTemplate { ... }  // no longer needed
+
+    /**
+     * 通过 JSON 请求体创建标签，使用 Wordpress.doCustomExchange 发送请求，
+     * 免去直接操作 RestTemplate 的反射复杂度。
+     */
+    private fun createTagJson(tag: Term): Term {
+        // Afrozaar Wordpress 的 doCustomExchange 需要显式传入各参数
+        val response: ResponseEntity<Term> = wp.doCustomExchange(
+            "/tags",            // context (相对路径)
+            HttpMethod.POST,          // HTTP 方法
+            Term::class.java,         // 预期返回类型
+            emptyArray(),             // URI 模板占位符
+            emptyMap<String, Any>(),  // 查询参数
+            tag,                      // 请求体
+            MediaType.APPLICATION_JSON
+        )
+
+        return response.body ?: throw IllegalStateException("Tag creation response body is null")
     }
 
     /**
@@ -64,7 +89,7 @@ class EWordpress(private val wp: Wordpress) {
      * @return 标签对应的Term
      */
     fun getOrCreateTag(name: String): Term {
-        return getOrCreateTerm(name, tagCache, wp.tags) { wp.createTag(it) }
+        return getOrCreateTerm(name, tagCache, wp.tags) { createTagJson(it) }
     }
 
     /**
@@ -76,4 +101,10 @@ class EWordpress(private val wp: Wordpress) {
     fun getOrCreateCategory(name: String): Term {
         return getOrCreateTerm(name, categoryCache, wp.categories) { wp.createCategory(it) }
     }
+    /**
+     * 获取当前的 {@link Wordpress} 实例。
+     *
+     * @return 当前 Wordpress 对象。
+     */
+    fun getWp(): Wordpress = wp
 }
