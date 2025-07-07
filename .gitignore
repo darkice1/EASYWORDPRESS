@@ -3,3 +3,4 @@ config.properties
 target/
 .gradle/
 build/
+.kotlin/
