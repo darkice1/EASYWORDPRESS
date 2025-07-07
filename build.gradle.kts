@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.github.darkice1"
-version = "0.0.2"
+version = "0.0.3"
 
 val projectName = "easy-wordpress"
 val projectDesc = "Neo easy wordpress SDK."

@@ -6,9 +6,14 @@ import com.afrozaar.wordpress.wpapi.v2.Wordpress
 import com.afrozaar.wordpress.wpapi.v2.model.Term
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
+import java.net.URI
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
 class EWordpress(private val wp: Wordpress) {
@@ -17,6 +22,11 @@ class EWordpress(private val wp: Wordpress) {
         .build()
 
     private val categoryCache: Cache<String, Term> = Caffeine.newBuilder()
+        .expireAfterWrite(1, TimeUnit.HOURS)
+        .build()
+
+    /** Cache that maps SHA‑256 hashes of file content to the media item's URL (to avoid re‑uploading identical content). */
+    private val contentCache: Cache<String, String> = Caffeine.newBuilder()
         .expireAfterWrite(1, TimeUnit.HOURS)
         .build()
 
@@ -107,4 +117,113 @@ class EWordpress(private val wp: Wordpress) {
      * @return 当前 Wordpress 对象。
      */
     fun getWp(): Wordpress = wp
+
+    /**
+     * Compute SHA‑256 hash of the given byte array and return it as a lowercase hex string.
+     */
+    private fun sha256(data: ByteArray): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(data)
+        val sb = StringBuilder(digest.size * 2)
+        for (b in digest) {
+            sb.append(String.format("%02x", b))
+        }
+        return sb.toString()
+    }
+
+    /**
+     * Upload a local file or a remote URL to the WordPress media library.
+     * If a file with the same filename **or identical content** already exists, the existing file's URL is returned and the upload is skipped.
+     *
+     * @param source Path to the local file or an HTTP(S) URL.
+     * @param filename Optional file name to use on the server; if null, the name is derived from the source.
+     * @return The absolute URL of the uploaded file on the WordPress server.
+     */
+    fun uploadFile(source: String, filename: String? = null): String {
+        // 1) Load bytes from local file or remote URL
+        val data: ByteArray
+        val derivedName: String? // name inferred from path/URL if any
+
+        if (source.startsWith("http://") || source.startsWith("https://")) {
+            val uri = URI.create(source)
+            val url = uri.toURL()
+            data = url.openStream().use { it.readBytes() }
+            derivedName = java.io.File(url.path).name.takeIf { it.isNotBlank() }
+        } else {
+            val file = java.io.File(source)
+            require(file.exists()) { "File \$source does not exist" }
+            data = file.readBytes()
+            derivedName = file.name
+        }
+
+        // 2) Compute content hash once; both for duplicate detection and as fallback filename
+        val contentHash = sha256(data)
+
+        // 3) Determine final filename:
+        //    If caller supplied `filename` use it directly.
+        //    Otherwise use the contentHash while preserving the original extension (if any).
+        val finalName = if (!filename.isNullOrBlank()) {
+            filename
+        } else {
+            val ext = derivedName
+                ?.substringAfterLast('.', missingDelimiterValue = "")
+                ?.takeIf { it.isNotBlank() }
+            if (ext != null) "$contentHash.$ext" else contentHash
+        }
+
+        // 4) If we've already uploaded identical bytes in this JVM process, return cached URL.
+        contentCache.getIfPresent(contentHash)?.let { return it }
+
+        // Avoid uploading duplicates: if a media item with the same filename already exists, return its URL.
+        findExistingMediaUrl(finalName)?.let { return it }
+
+        // Wrap the bytes in a Resource that exposes the desired filename
+        val resource = object : ByteArrayResource(data) {
+            override fun getFilename(): String = finalName
+        }
+
+        // Construct multipart/form-data request with a single part named "file"
+        val parts: MultiValueMap<String, Any> = LinkedMultiValueMap()
+        parts.add("file", resource)
+
+        val response: ResponseEntity<Map<*, *>> = wp.doCustomExchange(
+            "/media",
+            HttpMethod.POST,
+            Map::class.java,
+            emptyArray(),
+            emptyMap<String, Any>(),
+            parts,
+            MediaType.MULTIPART_FORM_DATA
+        )
+
+        val body = response.body ?: throw IllegalStateException("Upload response body is null")
+        val uploadedUrl = body["source_url"]?.toString()
+            ?: throw IllegalStateException("source_url missing in upload response")
+
+        // Cache the hash so future identical uploads are skipped.
+        contentCache.put(contentHash, uploadedUrl)
+        return uploadedUrl
+    }
+
+    /**
+     * Check whether a media item with the given filename already exists on the WordPress server.
+     *
+     * @param filename the exact filename to look for (case‑sensitive).
+     * @return the existing media item's public URL, or {@code null} if no match is found.
+     */
+    private fun findExistingMediaUrl(filename: String): String? {
+        // Query the WordPress REST API for media items matching the filename.
+        val response: ResponseEntity<Array<Map<*, *>>> = wp.doCustomExchange(
+            "/media?search=$filename&per_page=100",
+            HttpMethod.GET,
+            arrayOf<Map<*, *>>().javaClass,
+            emptyArray(),
+            emptyMap<String, Any>(),
+            null,
+            MediaType.APPLICATION_JSON
+        )
+
+        val items = response.body ?: return null
+        return items.firstOrNull { (it["source_url"] as? String)?.endsWith("/$filename") == true }
+            ?.get("source_url") as? String
+    }
 }
