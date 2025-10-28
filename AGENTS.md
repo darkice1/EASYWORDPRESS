@@ -17,7 +17,7 @@ EASYWORDPRESS 是基于 Kotlin JVM 的 WordPress REST API SDK。核心实现位�
 项目使用 `kotlin.test` 断言库并依赖 JUnit runner。新增单元或集成测试文件请放在 `src/test/kotlin`，遵循 `*Test.kt` 命名；测试方法以 `@Test` 注解并采用 Given-When-Then 风格命名。涉及真实 WordPress 的测试需通过配置开关控制，例如读取 `config.properties` 的布尔字段，以确保 `./gradlew test` 在无凭据环境仍能稳定通过。当前未强制 coverage threshold，但推荐借助 `./gradlew test jacocoTestReport`（若启用插件）检测缓存命中与错误路径，测试结束后清理由测试创建的远程资源与临时媒体。
 
 ## 提交与拉取请求
-提交信息遵循简短祈使句风格，示例：`Update .gitignore to include .kotlin directory`。一次提交聚焦单一问题，如同时修改缓存策略与发布配置，请拆分 commit。任何代码变更都需评估 README.md 与 README.zh-CN.md 是否需要同步更新；如需更新文档，务必保持两种语言内容一致。拉取请求需包含变更摘要、测试证明（例如执行 `./gradlew test`、截图或 curl response）、关联 issue 链接；若更改 Public API，请在描述中列出 breaking change checklist，并更新示例代码。提交前请确认未泄露任何凭据或令牌，必要时运行 `git status --short` 与 `git diff --stat` 自检。
+提交信息遵循简短祈使句风格，示例：`Update .gitignore to include .kotlin directory`。一次提交聚焦单一问题，如同时修改缓存策略与发布配置，请拆分 commit。任何代码变更都需评估 README.md 与 README.zh-CN.md 是否需要同步更新；如需更新文档，务必保持两种语言内容一致。若功能行为发生变化，必须同步更新 README.md、README.zh-CN.md 的功能描述，并在 `CHANGELOG.md` 中按日期倒序追加条目。拉取请求需包含变更摘要、测试证明（例如执行 `./gradlew test`、截图或 curl response）、关联 issue 链接；若更改 Public API，请在描述中列出 breaking change checklist，并更新示例代码。提交前请确认未泄露任何凭据或令牌，必要时运行 `git status --short` 与 `git diff --stat` 自检。
 
 ## 沟通与安全提示
 - 所有协作者与本助手的交流必须使用中文（包括问题、评论与回复），并在讨论中保留上下文，避免出现 only English message。

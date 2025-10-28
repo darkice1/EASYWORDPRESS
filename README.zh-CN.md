@@ -55,7 +55,7 @@ val mediaUrl = easyWp.uploadFile("/path/to/banner.png")
 - `./gradlew publishAndCloseSonatype`：推送至 OSSRH 暂存库，需在 `~/.gradle/gradle.properties` 配置 `centralUsername` 与 `centralPassword`。
 
 ## 贡献指南
-请遵循 `AGENTS.md` 中的约定，保持英文与中文文档同步更新，并在 PR 描述中附上测试结果（例如 `./gradlew test`）。欢迎提交改进！
+请遵循 `AGENTS.md` 中的约定，保持英文与中文文档同步更新，并在 PR 描述中附上测试结果（例如 `./gradlew test`）。若功能有所调整，请同步更新 `README.md` 与 `README.zh-CN.md` 的描述，并在 `CHANGELOG.md` 中按日期倒序记录本次变更。欢迎提交改进！
 
 ## 许可证
 项目基于 MIT License 开源，详见 [LICENSE](LICENSE)。

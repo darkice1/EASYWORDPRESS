@@ -55,7 +55,7 @@ val mediaUrl = easyWp.uploadFile("/path/to/banner.png")
 - `./gradlew publishAndCloseSonatype` &mdash; stage a release on OSSRH; requires `centralUsername` and `centralPassword` Gradle properties.
 
 ## Contributing
-Please follow the coding guidelines in `AGENTS.md`, keep English and Chinese documentation in sync, and include test evidence (for example `./gradlew test`) in pull requests. Contributions are welcome!
+Please follow the coding guidelines in `AGENTS.md`, keep English and Chinese documentation in sync, and include test evidence (for example `./gradlew test`) in pull requests. Whenever features change, update both `README.md` and `README.zh-CN.md`, and append a reverse-chronological entry to `CHANGELOG.md`. Contributions are welcome!
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
