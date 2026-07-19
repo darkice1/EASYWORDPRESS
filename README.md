@@ -11,7 +11,7 @@ EASYWORDPRESS wraps the Afrozaar WordPress v2 client with Kotlin-first utilities
 - **Caffeine-backed caching** for tag and category lookups, refreshing automatically after one hour.
 - **Automatic term management** that creates missing tags or categories transparently.
 - **Content-aware media uploads** that calculate SHA-256 hashes to skip files already stored remotely.
-- **Kotlin/JVM friendly design** with Java 21 toolchain support and Gradle publishing tasks for OSSRH.
+- **Kotlin/JVM friendly design** with Kotlin 2.4.10, a Java 25 toolchain, and Gradle publishing tasks for OSSRH.
 
 ## Installation
 Add the dependency from Maven Central (or your local Maven cache when developing):
@@ -49,7 +49,7 @@ val mediaUrl = easyWp.uploadFile("/path/to/banner.png")
 `uploadFile` accepts local paths or HTTP(S) URLs, reusing existing media when filenames or file content match.
 
 ## Build & Test
-- `./gradlew clean build` &mdash; compile against Kotlin 2.1, run tests, and assemble the JAR.
+- `./gradlew clean build` &mdash; compile with Kotlin 2.4.10 for Java 25, run tests, and assemble the JAR.
 - `./gradlew test` &mdash; execute the `kotlin.test` suite; run after changing caching or REST logic.
 - `./gradlew publiclocal` &mdash; publish artifacts to your local Maven repository for downstream testing.
 - `./gradlew publishAndCloseSonatype` &mdash; stage a release on OSSRH; requires `centralUsername` and `centralPassword` Gradle properties.

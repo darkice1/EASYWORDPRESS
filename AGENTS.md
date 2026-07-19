@@ -1,10 +1,10 @@
 # Repository Guidelines
 
 ## 项目结构与模块组织
-EASYWORDPRESS 是基于 Kotlin JVM 的 WordPress REST API SDK。核心实现位于 `src/main/kotlin/easy/wordpress/EWordpress.kt`，负责封装标签、分类与媒体上传的缓存策略，并与 Afrozaar Wordpress Client 集成，实现 caching layer 与 media deduplication logic。示例与集成测试放在 `src/test/kotlin/TestWordpress.kt`，包含 basic usage main 函数，可作为连接真实 WordPress 环境的参考。Gradle 配置与发布逻辑集中在 `build.gradle.kts` 与 `gradle/` 目录，定义 Java 21 toolchain、signing setup、Sonatype 发布任务及 Nexus configuration。构建产物写入 `build/`，若运行发布流程还会在 `target/` 下生成 Maven artifact。运行时凭据存放于根目录 `config.properties`，请结合 `.gitignore` 与本地密钥管理避免提交真实账号。
+EASYWORDPRESS 是基于 Kotlin JVM 的 WordPress REST API SDK。核心实现位于 `src/main/kotlin/easy/wordpress/EWordpress.kt`，负责封装标签、分类与媒体上传的缓存策略，并与 Afrozaar Wordpress Client 集成，实现 caching layer 与 media deduplication logic。示例与集成测试放在 `src/test/kotlin/TestWordpress.kt`，包含 basic usage main 函数，可作为连接真实 WordPress 环境的参考。Gradle 配置与发布逻辑集中在 `build.gradle.kts` 与 `gradle/` 目录，定义 Java 25 toolchain、signing setup、Sonatype 发布任务及 Nexus configuration。构建产物写入 `build/`，若运行发布流程还会在 `target/` 下生成 Maven artifact。运行时凭据存放于根目录 `config.properties`，请结合 `.gitignore` 与本地密钥管理避免提交真实账号。
 
 ## 构建、测试与开发命令
-- `./gradlew clean build`：清理旧产物、编译 Kotlin 2.1 源码、执行测试并打包 JAR，适合作为 CI pipeline 的默认入口。
+- `./gradlew clean build`：清理旧产物、使用 Kotlin 2.4.10 编译面向 Java 25 的源码、执行测试并打包 JAR，适合作为 CI pipeline 的默认入口。
 - `./gradlew test`：运行 `kotlin.test` 套件，用于验证缓存失效策略或 REST 扩展方法，推荐结合 `--info` 排查失败原因。
 - `./gradlew publiclocal`：安装工件到本地 Maven repository，便于 downstream project 在 `build.gradle` 中通过 `implementation("com.github.darkice1:easy-wordpress:local")` 进行验证。
 - `./gradlew publishAndCloseSonatype`：推送到 Sonatype OSSRH 并关闭暂存库，需在 `~/.gradle/gradle.properties` 中配置 `centralUsername`、`centralPassword`，并确保网络代理允许访问。

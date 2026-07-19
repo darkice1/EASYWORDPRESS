@@ -11,7 +11,7 @@ EASYWORDPRESS 基于 Afrozaar 的 WordPress v2 客户端封装出更易用的 Ko
 - **内置 Caffeine 缓存**：标签与分类查询自动缓存 1 小时，减少重复请求。
 - **自动 Term 管理**：缺失的标签或分类会按需创建，无需手动处理。
 - **内容感知的媒体上传**：通过 SHA-256 摘要判断文件是否已存在，避免重复上传。
-- **Kotlin/JVM 友好**：默认启用 Java 21 工具链，并提供完备的 Gradle 发布任务以推送至 OSSRH。
+- **Kotlin/JVM 友好**：默认使用 Kotlin 2.4.10 与 Java 25 工具链，并提供完备的 Gradle 发布任务以推送至 OSSRH。
 
 ## 安装
 从 Maven Central（或本地 Maven 仓库）引入依赖：
@@ -49,7 +49,7 @@ val mediaUrl = easyWp.uploadFile("/path/to/banner.png")
 `uploadFile` 支持本地路径或 HTTP(S) 链接，并在发现文件名或内容相同的情况下复用现有媒体。
 
 ## 构建与测试
-- `./gradlew clean build`：编译 Kotlin 2.1 代码，运行测试并打包 JAR。
+- `./gradlew clean build`：使用 Kotlin 2.4.10 编译面向 Java 25 的代码，运行测试并打包 JAR。
 - `./gradlew test`：执行 `kotlin.test` 测试套件，修改缓存或 REST 逻辑后务必运行。
 - `./gradlew publiclocal`：将制品安装到本地 Maven 仓库，方便下游项目联调。
 - `./gradlew publishAndCloseSonatype`：推送至 OSSRH 暂存库，需在 `~/.gradle/gradle.properties` 配置 `centralUsername` 与 `centralPassword`。

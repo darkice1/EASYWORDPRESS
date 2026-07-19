@@ -2,15 +2,15 @@
 
 
 plugins {
-	kotlin("jvm") version "2.1.20"
+	kotlin("jvm") version "2.4.10"
 	`java-library`
-	id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+	id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 	`maven-publish`
 	signing
 }
 
 group = "com.github.darkice1"
-version = "0.0.3"
+version = "0.0.4"
 
 val projectName = "easy-wordpress"
 val projectDesc = "Neo easy wordpress SDK."
@@ -19,7 +19,7 @@ val repoName = projectName
 // -------- Java toolchain & JAR 附件 --------
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(21))
+		languageVersion.set(JavaLanguageVersion.of(25))
 	}
 	withSourcesJar()
 	withJavadocJar()
@@ -42,8 +42,13 @@ dependencies {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
 	compilerOptions {
-		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25)
 	}
+}
+
+// TestWordpress.kt 是可运行的集成示例，并非自动发现的测试类。
+tasks.withType<AbstractTestTask>().configureEach {
+	failOnNoDiscoveredTests = false
 }
 
 tasks.withType<Javadoc>().configureEach {
